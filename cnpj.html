@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta CNPJ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+        }
+        #resultado {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+            max-width: 500px;
+        }
+    </style>
+</head>
+<body>
+    <h2>Consulta de CNPJ</h2>
+    <input type="text" id="cnpj" placeholder="Digite o CNPJ" maxlength="18">
+    <button onclick="consultarCNPJ()">Buscar</button>
+    <div id="resultado"></div>
+
+    <script>
+        $(document).ready(function() {
+            $('#cnpj').mask('00.000.000/0000-00');
+        });
+
+        async function consultarCNPJ() {
+            let cnpj = document.getElementById('cnpj').value.replace(/\D/g, '');
+            if (cnpj.length !== 14) {
+                alert('CNPJ inválido. Digite corretamente.');
+                return;
+            }
+            
+            document.getElementById('resultado').innerHTML = 'Buscando...';
+            
+            try {
+                let response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+                let data = await response.json();
+                if (data.message) {
+                    document.getElementById('resultado').innerHTML = 'CNPJ não encontrado.';
+                    return;
+                }
+                
+                document.getElementById('resultado').innerHTML = `
+                    <strong>Razão Social:</strong> ${data.razao_social || 'N/A'}<br>
+                    <strong>Nome Fantasia:</strong> ${data.nome_fantasia || 'N/A'}<br>
+                    <strong>CNPJ:</strong> ${data.cnpj}<br>
+                    <strong>Telefone:</strong> ${data.ddd_telefone_1 || 'N/A'}<br>
+                    <strong>Endereço:</strong> ${data.logradouro}, ${data.numero || 'S/N'} - ${data.bairro} <br>
+                    <strong>Cidade:</strong> ${data.municipio} - ${data.uf} <br>
+                    <strong>Situação Cadastral:</strong> ${data.situacao}<br>
+                `;
+            } catch (error) {
+                document.getElementById('resultado').innerHTML = 'Erro ao buscar CNPJ. Tente novamente mais tarde.';
+            }
+        }
+    </script>
+</body>
+</html>
