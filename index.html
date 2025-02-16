@@ -13,28 +13,67 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
+            background-color: #f4f4f4;
         }
-        input, button {
+        h2 {
+            color: #333;
+        }
+        .container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        input {
+            width: 100%;
             padding: 10px;
-            margin: 5px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
             font-size: 16px;
+            text-align: center;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: none;
+            background: #28a745;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #218838;
         }
         #resultado {
             margin-top: 20px;
             padding: 15px;
-            border: 1px solid #ccc;
             border-radius: 5px;
-            width: 100%;
-            max-width: 500px;
+            background: #fff;
+            text-align: left;
+            display: none;
+        }
+        .loading {
+            text-align: center;
+            font-size: 18px;
+            color: #666;
         }
     </style>
 </head>
 <body>
-    <h2>Consulte seu CNPJ</h2>
-    <input type="text" id="cnpj" placeholder="Digite o CNPJ" maxlength="18">
-    <button onclick="consultarCNPJ()">Buscar</button>
-    <div id="resultado"></div>
-
+    <h2>Consulta de CNPJ</h2>
+    <div class="container">
+        <input type="text" id="cnpj" placeholder="Digite o CNPJ" maxlength="18">
+        <button onclick="consultarCNPJ()">Buscar</button>
+        <div id="resultado"></div>
+    </div>
+    
     <script>
         $(document).ready(function() {
             $('#cnpj').mask('00.000.000/0000-00');
@@ -47,17 +86,19 @@
                 return;
             }
             
-            document.getElementById('resultado').innerHTML = 'Buscando...';
+            let resultado = document.getElementById('resultado');
+            resultado.style.display = 'block';
+            resultado.innerHTML = '<p class="loading">Buscando...</p>';
             
             try {
                 let response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
                 let data = await response.json();
                 if (data.message) {
-                    document.getElementById('resultado').innerHTML = 'CNPJ não encontrado.';
+                    resultado.innerHTML = '<p style="color: red;">CNPJ não encontrado.</p>';
                     return;
                 }
                 
-                document.getElementById('resultado').innerHTML = `
+                resultado.innerHTML = `
                     <strong>Razão Social:</strong> ${data.razao_social || 'N/A'}<br>
                     <strong>Nome Fantasia:</strong> ${data.nome_fantasia || 'N/A'}<br>
                     <strong>CNPJ:</strong> ${data.cnpj}<br>
@@ -67,7 +108,7 @@
                     <strong>Situação Cadastral:</strong> ${data.situacao}<br>
                 `;
             } catch (error) {
-                document.getElementById('resultado').innerHTML = 'Erro ao buscar CNPJ. Tente novamente mais tarde.';
+                resultado.innerHTML = '<p style="color: red;">Erro ao buscar CNPJ. Tente novamente mais tarde.</p>';
             }
         }
     </script>
